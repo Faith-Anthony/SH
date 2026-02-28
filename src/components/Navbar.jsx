@@ -1,44 +1,103 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { useAuthStore } from '../store/authStore';
 
 function Navbar() {
   const { user, userProfile, logout } = useAuthStore();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
+    setMenuOpen(false);
     navigate('/');
+  };
+
+  const handleNavClick = () => {
+    setMenuOpen(false);
   };
 
   return (
     <nav className="navbar">
       <div className="container navbar-content">
-        <Link to="/" className="navbar-brand">
+        <Link to="/" className="navbar-brand" onClick={handleNavClick}>
           💰 SupportHub
         </Link>
-        <div className="flex">
-          {userProfile?.isCreator && (
-            <>
-              <Link to="/creator-dashboard" className="flex">
-                📊 Creator Dashboard
+        
+        {user ? (
+          <>
+            {/* Desktop Menu */}
+            <div className="navbar-desktop">
+              {userProfile?.isCreator && (
+                <>
+                  <Link to="/creator-dashboard" className="navbar-link">
+                    📊 Creator Dashboard
+                  </Link>
+                  <button 
+                    className="primary" 
+                    onClick={() => navigate('/create-content')}
+                    style={{ marginRight: '15px' }}
+                  >
+                    ✨ Create Content
+                  </button>
+                </>
+              )}
+              <Link to="/dashboard" className="navbar-link">
+                👤 Dashboard
               </Link>
-              <button 
-                className="primary" 
-                onClick={() => navigate('/create-content')}
-                style={{ marginRight: '15px' }}
-              >
-                ✨ Create Content
+              <span className="navbar-welcome">Welcome, {userProfile?.username}</span>
+              <button className="secondary" onClick={handleLogout}>
+                Logout
               </button>
-            </>
-          )}
-          <Link to="/dashboard" className="flex">
-            👤 Dashboard
-          </Link>
-          <span style={{ marginRight: '15px' }}>Welcome, {userProfile?.username}</span>
-          <button className="secondary" onClick={handleLogout}>
-            Logout
-          </button>
-        </div>
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <button 
+              className="hamburger"
+              onClick={() => setMenuOpen(!menuOpen)}
+              aria-label="Toggle menu"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+
+            {/* Mobile Menu */}
+            <div className={`navbar-mobile ${menuOpen ? 'open' : ''}`}>
+              {userProfile?.isCreator && (
+                <>
+                  <Link 
+                    to="/creator-dashboard" 
+                    className="mobile-menu-link"
+                    onClick={handleNavClick}
+                  >
+                    📊 Creator Dashboard
+                  </Link>
+                  <button 
+                    className="primary mobile-menu-btn"
+                    onClick={() => {
+                      navigate('/create-content');
+                      handleNavClick();
+                    }}
+                  >
+                    ✨ Create Content
+                  </button>
+                </>
+              )}
+              <Link 
+                to="/dashboard" 
+                className="mobile-menu-link"
+                onClick={handleNavClick}
+              >
+                👤 Dashboard
+              </Link>
+              <span className="mobile-menu-welcome">Welcome, {userProfile?.username}</span>
+              <button className="secondary mobile-menu-btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          </>
+        ) : null}
       </div>
     </nav>
   );

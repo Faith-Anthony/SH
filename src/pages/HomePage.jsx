@@ -9,59 +9,23 @@ function HomePage() {
       {/* Hero Section */}
       <div className="hero" style={{ position: 'relative', overflow: 'hidden' }}>
         {/* Animated background orbs */}
-        <div style={{
-          position: 'absolute',
-          width: '400px',
-          height: '400px',
-          borderRadius: '50%',
-          background: 'rgba(102, 126, 234, 0.1)',
-          top: '-100px',
-          right: '-100px',
-          animation: 'float 6s ease-in-out infinite',
-        }} />
-        <div style={{
-          position: 'absolute',
-          width: '300px',
-          height: '300px',
-          borderRadius: '50%',
-          background: 'rgba(118, 75, 162, 0.08)',
-          bottom: '-50px',
-          left: '-50px',
-          animation: 'float 8s ease-in-out infinite reverse',
-        }} />
+        <div className="hero-orb hero-orb-1" />
+        <div className="hero-orb hero-orb-2" />
         
         <div className="container" style={{ position: 'relative', zIndex: 10 }}>
           <div style={{
             animation: 'slideInDown 0.8s ease-out',
             marginBottom: '40px',
           }}>
-            <h1 style={{
-              fontSize: '72px',
-              marginBottom: '20px',
-              fontWeight: '900',
-              color: 'white',
-              letterSpacing: '-2px',
-              animation: 'pulseText 3s ease-in-out infinite',
-              textShadow: '0 4px 20px rgba(0, 0, 0, 0.2)',
-            }}>SupportHub</h1>
-            <p style={{
-              fontSize: '22px',
-              marginBottom: '40px',
-              fontWeight: '600',
-              opacity: 1,
-              animation: 'slideInUp 0.8s ease-out 0.2s both',
-              color: 'white',
-              textShadow: '0 2px 10px rgba(0, 0, 0, 0.15)',
-            }}>
+            <h1 className="hero-title">SupportHub</h1>
+            <p className="hero-subtitle">
               The simplest way for creators to earn and manage memberships
             </p>
           </div>
 
           <div
-            className="flex"
+            className="hero-buttons"
             style={{
-              justifyContent: 'center',
-              gap: '16px',
               animation: 'slideInUp 0.8s ease-out 0.4s both',
             }}
           >
