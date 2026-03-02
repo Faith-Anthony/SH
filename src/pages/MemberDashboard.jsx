@@ -6,15 +6,18 @@ import { getCreatorProfile, getCreatorPublicPosts } from '../utils/accessControl
 
 function MemberDashboard() {
   const { user, userProfile } = useAuthStore();
-  const { subscriptions, fetchMemberSubscriptions } = useSubscriptionStore();
+  const { subscriptions, fetchMemberSubscriptions, checkAndUpdateExpired } = useSubscriptionStore();
   const [creators, setCreators] = useState([]);
   const [activeTab, setActiveTab] = useState('subscriptions');
 
   useEffect(() => {
     if (user) {
+      // Check and update expired subscriptions first
+      checkAndUpdateExpired(user.uid);
+      // Then fetch fresh subscriptions
       fetchMemberSubscriptions(user.uid);
     }
-  }, [user, fetchMemberSubscriptions]);
+  }, [user, fetchMemberSubscriptions, checkAndUpdateExpired]);
 
   // Get unique creators from subscriptions
   useEffect(() => {

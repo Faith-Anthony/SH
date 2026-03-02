@@ -29,18 +29,9 @@ function Navbar() {
             {/* Desktop Menu */}
             <div className="navbar-desktop">
               {userProfile?.isCreator && (
-                <>
-                  <Link to="/creator-dashboard" className="navbar-link">
-                    📊 Creator Dashboard
-                  </Link>
-                  <button 
-                    className="primary" 
-                    onClick={() => navigate('/create-content')}
-                    style={{ marginRight: '15px' }}
-                  >
-                    ✨ Create Content
-                  </button>
-                </>
+                <Link to="/creator-dashboard" className="navbar-link">
+                  📊 Creator Dashboard
+                </Link>
               )}
               <Link to="/dashboard" className="navbar-link">
                 👤 Dashboard
@@ -65,24 +56,13 @@ function Navbar() {
             {/* Mobile Menu */}
             <div className={`navbar-mobile ${menuOpen ? 'open' : ''}`}>
               {userProfile?.isCreator && (
-                <>
-                  <Link 
-                    to="/creator-dashboard" 
-                    className="mobile-menu-link"
-                    onClick={handleNavClick}
-                  >
-                    📊 Creator Dashboard
-                  </Link>
-                  <button 
-                    className="primary mobile-menu-btn"
-                    onClick={() => {
-                      navigate('/create-content');
-                      handleNavClick();
-                    }}
-                  >
-                    ✨ Create Content
-                  </button>
-                </>
+                <Link 
+                  to="/creator-dashboard" 
+                  className="mobile-menu-link"
+                  onClick={handleNavClick}
+                >
+                  📊 Creator Dashboard
+                </Link>
               )}
               <Link 
                 to="/dashboard" 
