@@ -3,12 +3,19 @@ import { useCreatorStore } from '../store/creatorStore';
 
 function CreatePostModal({ creatorId, tiers, onClose, isEdit = false, post = null }) {
   const { createPost, updatePost, loading } = useCreatorStore();
+  
+  // Safely get post data with defaults
+  const getPostValue = (field, defaultValue) => {
+    if (!isEdit || !post) return defaultValue;
+    return post[field] !== undefined ? post[field] : defaultValue;
+  };
+
   const [formData, setFormData] = useState({
-    title: isEdit ? post.title : '',
-    description: isEdit ? post.description : '',
-    content: isEdit ? post.content : '',
-    visibility: isEdit ? post.visibility : 'public',
-    minTierRank: isEdit ? post.minTierRank.toString() : '0'
+    title: getPostValue('title', ''),
+    description: getPostValue('description', ''),
+    content: getPostValue('content', ''),
+    visibility: getPostValue('visibility', 'public'),
+    minTierRank: getPostValue('minTierRank', 0).toString()
   });
 
   const handleChange = (e) => {
@@ -112,9 +119,9 @@ function CreatePostModal({ creatorId, tiers, onClose, isEdit = false, post = nul
                 onChange={handleChange}
               >
                 <option value="0">All subscribers</option>
-                {tiers.map(tier => (
-                  <option key={tier.id} value={tier.rank}>
-                    {tier.name} (Rank {tier.rank})
+                {Array.isArray(tiers) && tiers.map(tier => (
+                  <option key={tier.id} value={tier.rank || 0}>
+                    {tier.name || 'Unnamed'} (Rank {tier.rank || 0})
                   </option>
                 ))}
               </select>

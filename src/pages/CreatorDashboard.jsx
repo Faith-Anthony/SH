@@ -189,6 +189,13 @@ function CreatorDashboard() {
         )}
       </div>
 
+      {/* Modals */}
+      {showTierModal && (
+        <CreateTierModal creatorId={user.uid} onClose={() => setShowTierModal(false)} />
+      )}
+
+      {showPostModal && (
+        <CreatePostModal 
           creatorId={user.uid} 
           tiers={tiers} 
           onClose={() => {
@@ -197,14 +204,7 @@ function CreatorDashboard() {
           }}
           isEdit={!!editingPost}
           post={editingPost}
-       
-      {/* Modals */}
-      {showTierModal && (
-        <CreateTierModal creatorId={user.uid} onClose={() => setShowTierModal(false)} />
-      )}
-
-      {showPostModal && (
-        <CreatePostModal creatorId={user.uid} tiers={tiers} onClose={() => setShowPostModal(false)} />
+        />
       )}
     </div>
   );
