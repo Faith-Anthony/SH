@@ -103,6 +103,25 @@ export async function logFileAccess(userId, fileId, postId) {
 }
 
 /**
+ * Get creator's public profile by ID
+ */
+export async function getCreatorProfileById(creatorId) {
+  try {
+    const profileRef = doc(db, 'userProfiles', creatorId);
+    const profileSnap = await getDoc(profileRef);
+    
+    if (!profileSnap.exists()) {
+      return null;
+    }
+    
+    return { id: profileSnap.id, ...profileSnap.data() };
+  } catch (error) {
+    console.error('Get creator profile by ID error:', error);
+    return null;
+  }
+}
+
+/**
  * Get creator's public profile
  */
 export async function getCreatorProfile(username) {

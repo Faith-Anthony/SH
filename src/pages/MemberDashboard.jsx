@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useSubscriptionStore } from '../store/subscriptionStore';
-import { getCreatorProfile, getCreatorPublicPosts, getCreatorTiers } from '../utils/accessControl';
+import { getCreatorProfile, getCreatorProfileById, getCreatorPublicPosts, getCreatorTiers } from '../utils/accessControl';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '../firebase';
 import SubscribeTierModal from '../components/SubscribeTierModal';
 
 function MemberDashboard() {
+  const navigate = useNavigate();
   const { user, userProfile } = useAuthStore();
   const { subscriptions, fetchMemberSubscriptions, checkAndUpdateExpired, subscribe } = useSubscriptionStore();
   const [creators, setCreators] = useState([]);
@@ -17,6 +18,8 @@ function MemberDashboard() {
   const [selectedTier, setSelectedTier] = useState(null);
   const [selectedCreator, setSelectedCreator] = useState(null);
   const [creatorsList, setCreatorsList] = useState([]);
+  const [showManageModal, setShowManageModal] = useState(false);
+  const [managingSubscription, setManagingSubscription] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -195,8 +198,22 @@ function MemberDashboard() {
                       </div>
                     </div>
                     <div>
-                      <button className="primary">View Content</button>
-                      <button className="secondary" style={{ marginTop: '10px' }}>Manage</button>
+                      <button 
+                        className="primary" 
+                        onClick={() => navigate(`/creator/${creator.username}`)}
+                        style={{ marginRight: '10px' }}
+                      >
+                        View Content
+                      </button>
+                      <button 
+                        className="secondary"
+                        onClick={() => {
+                          setManagingSubscription(sub);
+                          setShowManageModal(true);
+                        }}
+                      >
+                        Manage
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -223,21 +240,20 @@ function MemberDashboard() {
         </div>
       )}
 
-      {activeTab === 'Browse' && (
-        <div className="card">
-          {loading ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: '#666' }}>Loading creators...</p>
-            </div>
-          ) : creatorsList.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px' }}>
-              <p style={{ color: '#666', fontSize: '18px' }}>No creators found yet</p>
-              <p style={{ color: '#999' }}>Check back soon for amazing creators to support!</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
-              {creatorsList.map(creator => (
-                <div key={creator.id} className="card" style={{ border: '1px solid #e5e7eb', padding: '20px' }}>
+      {activeTab === 
+                  key={creator.id} 
+                  className="card" 
+                  style={{ border: '1px solid #e5e7eb', padding: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
+                  onClick={() => navigate(`/creator/${creator.username}`)}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
                   <div style={{ marginBottom: '15px' }}>
                     <div style={{ fontSize: '40px', marginBottom: '10px' }}>
                       {creator.profileImage ? '📸' : '👤'}
@@ -245,6 +261,23 @@ function MemberDashboard() {
                     <h3 style={{ marginBottom: '5px' }}>@{creator.username}</h3>
                     <p style={{ color: '#666', fontSize: '14px', marginBottom: '10px' }}>
                       {creator.bio || 'A talented creator'}
+                    </p>
+                    <p style={{ color: '#999', fontSize: '12px' }}>
+                      {creator.postCount || 0} posts
+                    </p>
+                  </div>
+
+                  <div style={{ marginTop: '20px' }}>
+                    <h4 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>Subscribe to:</h4>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      {creator.membershipTiers?.length > 0 ? (
+                        creator.membershipTiers.map(tier => (
+                          <button
+                            key={tier.id}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSubscribeClick(creator, tier);
+                            }
                     </p>
                     <p style={{ color: '#999', fontSize: '12px' }}>
                       {creator.postCount || 0} posts
@@ -306,6 +339,69 @@ function MemberDashboard() {
           }}
           onSubscribe={handleSubscribeSubmit}
         />
+      )}
+
+      {showManageModal && managingSubscription && (
+        <div className="modal active">
+          <div className="modal-content" style={{ maxWidth: '500px' }}>
+            <h2>Manage Subscription</h2>
+            <div style={{ marginTop: '20px', background: '#f9fafb', padding: '15px', borderRadius: '6px', marginBottom: '20px' }}>
+              <p style={{ margin: '0 0 10px 0' }}><strong>Tier:</strong> {managingSubscription.tierName}</p>
+              <p style={{ margin: '0 0 10px 0' }}><strong>Price:</strong> ₦{managingSubscription.monthlyPrice}/month</p>
+              <p style={{ margin: '0 0 10px 0' }}><strong>Status:</strong> <span className={`badge ${managingSubscription.status === 'active' ? 'success' : 'warning'}`}>{managingSubscription.status}</span></p>
+              {managingSubscription.renewalDate && (
+                <p style={{ margin: 0 }}><strong>Renews:</strong> {new Date(managingSubscription.renewalDate.seconds * 1000 || managingSubscription.renewalDate).toLocaleDateString()}</p>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button 
+                className="primary"
+                onClick={async () => {
+                  try {
+                    const creatorProfile = await getCreatorProfileById(managingSubscription.creatorId);
+                    if (creatorProfile?.username) {
+                      navigate(`/creator/${creatorProfile.username}`);
+                      setShowManageModal(false);
+                    }
+                  } catch (error) {
+                    console.error('Error fetching creator:', error);
+                  }
+                }}
+              >
+                📖 View Creator Posts
+              </button>
+              <button 
+                className="secondary"
+                onClick={() => {
+                  alert('Upgrade feature coming soon!');
+                }}
+              >
+                ⬆️ Upgrade Tier
+              </button>
+              <button 
+                className="secondary"
+                onClick={() => {
+                  if (confirm('Are you sure you want to cancel this subscription?')) {
+                    alert('Cancel feature coming soon!');
+                  }
+                }}
+              >
+                ✕ Cancel Subscription
+              </button>
+            </div>
+
+            <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+              <button 
+                className="secondary"
+                onClick={() => setShowManageModal(false)}
+                style={{ flex: 1 }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
