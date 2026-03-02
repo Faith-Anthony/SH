@@ -352,8 +352,8 @@ function AuthPage() {
           >
             <p style={{ color: '#718096', fontSize: '14px', margin: 0 }}>
               {isSignup ? "Already have an account? " : "Don't have an account? "}
-              <a
-                href={isSignup ? "/auth?type=signin" : "/auth?type=signup"}
+              <button
+                onClick={() => navigate(isSignup ? '/auth?type=signin' : '/auth?type=signup')}
                 style={{
                   color: '#667eea',
                   fontWeight: '600',
@@ -362,6 +362,10 @@ function AuthPage() {
                   transition: 'all 0.3s ease',
                   paddingBottom: '2px',
                   borderBottom: '2px solid transparent',
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  font: 'inherit',
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.color = '#764ba2';
@@ -373,7 +377,7 @@ function AuthPage() {
                 }}
               >
                 {isSignup ? 'Sign In' : 'Sign Up'}
-              </a>
+              </button>
             </p>
           </div>
         </div>
