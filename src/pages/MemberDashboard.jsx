@@ -200,7 +200,16 @@ function MemberDashboard() {
                     <div>
                       <button 
                         className="primary" 
-                        onClick={() => navigate(`/creator/${creator.username}`)}
+                        onClick={async () => {
+                          try {
+                            const creatorProfile = await getCreatorProfileById(sub.creatorId);
+                            if (creatorProfile?.username) {
+                              navigate(`/creator/${creatorProfile.username}`);
+                            }
+                          } catch (error) {
+                            console.error('Error navigating:', error);
+                          }
+                        }}
                         style={{ marginRight: '10px' }}
                       >
                         View Content
@@ -240,7 +249,21 @@ function MemberDashboard() {
         </div>
       )}
 
-      {activeTab === 
+      {activeTab === 'Browse' && (
+        <div className="card">
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: '#666' }}>Loading creators...</p>
+            </div>
+          ) : creatorsList.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <p style={{ color: '#666', fontSize: '18px' }}>No creators found yet</p>
+              <p style={{ color: '#999' }}>Check back soon for amazing creators to support!</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
+              {creatorsList.map(creator => (
+                <div 
                   key={creator.id} 
                   className="card" 
                   style={{ border: '1px solid #e5e7eb', padding: '20px', cursor: 'pointer', transition: 'all 0.2s' }}
@@ -277,21 +300,7 @@ function MemberDashboard() {
                             onClick={(e) => {
                               e.stopPropagation();
                               handleSubscribeClick(creator, tier);
-                            }
-                    </p>
-                    <p style={{ color: '#999', fontSize: '12px' }}>
-                      {creator.postCount || 0} posts
-                    </p>
-                  </div>
-
-                  <div style={{ marginTop: '20px' }}>
-                    <h4 style={{ marginBottom: '10px', fontSize: '14px', fontWeight: '600' }}>Subscribe to:</h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      {creator.membershipTiers?.length > 0 ? (
-                        creator.membershipTiers.map(tier => (
-                          <button
-                            key={tier.id}
-                            onClick={() => handleSubscribeClick(creator, tier)}
+                            }}
                             style={{
                               padding: '8px 12px',
                               background: '#f3f4f6',
