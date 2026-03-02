@@ -146,6 +146,23 @@ export const useCreatorStore = create((set, get) => ({
     }
   },
 
+  // Update post
+  updatePost: async (postId, postData) => {
+    try {
+      set({ loading: true });
+      await updateDoc(doc(db, 'posts', postId), postData);
+      set(state => ({
+        posts: state.posts.map(p => p.id === postId ? { ...p, ...postData } : p),
+        loading: false
+      }));
+      return { success: true };
+    } catch (error) {
+      console.error('Update post error:', error);
+      set({ loading: false });
+      return { success: false, error: error.message };
+    }
+  },
+
   // Fetch subscribers
   fetchSubscribers: async (creatorId) => {
     try {

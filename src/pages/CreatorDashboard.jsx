@@ -20,6 +20,7 @@ function CreatorDashboard() {
 
   const [showTierModal, setShowTierModal] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -131,7 +132,14 @@ function CreatorDashboard() {
                       )}
                     </div>
                   </div>
-                  <button className="secondary" style={{ height: 'fit-content' }}>
+                  <button 
+                    className="secondary" 
+                    style={{ height: 'fit-content' }}
+                    onClick={() => {
+                      setEditingPost(post);
+                      setShowPostModal(true);
+                    }}
+                  >
                     Edit
                   </button>
                 </div>
@@ -181,6 +189,15 @@ function CreatorDashboard() {
         )}
       </div>
 
+          creatorId={user.uid} 
+          tiers={tiers} 
+          onClose={() => {
+            setShowPostModal(false);
+            setEditingPost(null);
+          }}
+          isEdit={!!editingPost}
+          post={editingPost}
+       
       {/* Modals */}
       {showTierModal && (
         <CreateTierModal creatorId={user.uid} onClose={() => setShowTierModal(false)} />

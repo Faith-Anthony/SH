@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useCreatorStore } from '../store/creatorStore';
 
-function CreatePostModal({ creatorId, tiers, onClose }) {
-  const { createPost, loading } = useCreatorStore();
+function CreatePostModal({ creatorId, tiers, onClose, isEdit = false, post = null }) {
+  const { createPost, updatePost, loading } = useCreatorStore();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    content: '',
-    visibility: 'public',
-    minTierRank: '0'
+    title: isEdit ? post.title : '',
+    description: isEdit ? post.description : '',
+    content: isEdit ? post.content : '',
+    visibility: isEdit ? post.visibility : 'public',
+    minTierRank: isEdit ? post.minTierRank.toString() : '0'
   });
 
   const handleChange = (e) => {
@@ -27,20 +27,32 @@ function CreatePostModal({ creatorId, tiers, onClose }) {
       minTierRank: parseInt(formData.minTierRank)
     };
 
-    const result = await createPost(creatorId, postData);
+    let result;
+    if (isEdit) {
+      result = await updatePost(post.id, postData);
+      if (result.success) {
+        alert('Post updated successfully!');
+      } else {
+        alert('Error: ' + result.error);
+      }
+    } else {
+      result = await createPost(creatorId, postData);
+      if (result.success) {
+        alert('Post created successfully!');
+      } else {
+        alert('Error: ' + result.error);
+      }
+    }
 
     if (result.success) {
-      alert('Post created successfully!');
       onClose();
-    } else {
-      alert('Error: ' + result.error);
     }
   };
 
   return (
     <div className="modal active">
       <div className="modal-content" style={{ maxWidth: '600px' }}>
-        <h2>Create New Post</h2>
+        <h2>{isEdit ? 'Edit Post' : 'Create New Post'}</h2>
 
         <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
           <div className="form-group">
@@ -121,7 +133,7 @@ function CreatePostModal({ creatorId, tiers, onClose }) {
               disabled={loading}
               style={{ flex: 1 }}
             >
-              {loading ? 'Creating...' : 'Create Post'}
+              {loading ? (isEdit ? 'Updating...' : 'Creating...') : (isEdit ? 'Update Post' : 'Create Post')}
             </button>
             <button
               type="button"
