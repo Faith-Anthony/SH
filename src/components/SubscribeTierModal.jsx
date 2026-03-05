@@ -8,6 +8,7 @@ function SubscribeTierModal({ creator, tier, onClose }) {
   const { user } = useAuthStore();
   const { subscribe } = useSubscriptionStore();
   const [loading, setLoading] = useState(false);
+  const [notification, setNotification] = useState(null);
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -19,11 +20,13 @@ function SubscribeTierModal({ creator, tier, onClose }) {
     const result = await subscribe(user.uid, creator.id, tier.id, tier);
 
     if (result.success) {
-      alert(`Successfully subscribed to ${tier.name}!`);
-      onClose();
-      navigate('/dashboard');
+      setNotification({ type: 'success', message: `Successfully subscribed to ${tier.name}!` });
+      setTimeout(() => {
+        onClose();
+        navigate('/dashboard');
+      }, 1500);
     } else {
-      alert('Subscription failed: ' + result.error);
+      setNotification({ type: 'error', message: 'Subscription failed: ' + result.error });
     }
 
     setLoading(false);
@@ -83,6 +86,21 @@ function SubscribeTierModal({ creator, tier, onClose }) {
             Cancel
           </button>
         </div>
+
+        {notification && (
+          <div style={{
+            marginTop: '15px',
+            padding: '12px 16px',
+            background: notification.type === 'success' ? '#d1fae5' : '#fee2e2',
+            border: `1px solid ${notification.type === 'success' ? '#6ee7b7' : '#fca5a5'}`,
+            color: notification.type === 'success' ? '#065f46' : '#991b1b',
+            borderRadius: '6px',
+            fontSize: '14px',
+            fontWeight: '500'
+          }}>
+            {notification.message}
+          </div>
+        )}
       </div>
     </div>
   );

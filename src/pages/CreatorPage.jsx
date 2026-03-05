@@ -16,6 +16,7 @@ function CreatorPage() {
   const [loading, setLoading] = useState(true);
   const [showSubscribeModal, setShowSubscribeModal] = useState(false);
   const [selectedTier, setSelectedTier] = useState(null);
+  const [notification, setNotification] = useState(null);
 
   useEffect(() => {
     const loadCreator = async () => {
@@ -81,10 +82,44 @@ function CreatorPage() {
               <h1>@{creator.username}</h1>
               <p>{creator.bio || 'A talented creator'}</p>
               <div className="flex" style={{ marginTop: '15px' }}>
-                <button className="primary">
+                <button 
+                  className="primary"
+                  onClick={() => {
+                    const isFollowing = localStorage.getItem(`follow_${creator.id}`);
+                    if (isFollowing) {
+                      localStorage.removeItem(`follow_${creator.id}`);
+                      setNotification({ type: 'success', message: 'Unfollowed @' + creator.username });
+                    } else {
+                      localStorage.setItem(`follow_${creator.id}`, 'true');
+                      setNotification({ type: 'success', message: 'Followed @' + creator.username + '!' });
+                    }
+                    setTimeout(() => setNotification(null), 3000);
+                  }}
+                >
                   Follow
                 </button>
-                <button className="secondary">
+                <button 
+                  className="secondary"
+                  onClick={() => {
+                    const currentUrl = window.location.href;
+                    if (navigator.share) {
+                      navigator.share({
+                        title: `Check out @${creator.username}`,
+                        text: creator.bio || 'A talented creator',
+                        url: currentUrl
+                      }).catch(err => console.log('Share error:', err));
+                    } else {
+                      // Fallback: copy to clipboard
+                      navigator.clipboard.writeText(currentUrl).then(() => {
+                        setNotification({ type: 'success', message: 'Creator link copied to clipboard!' });
+                        setTimeout(() => setNotification(null), 3000);
+                      }).catch(() => {
+                        setNotification({ type: 'info', message: 'Share URL: ' + currentUrl });
+                        setTimeout(() => setNotification(null), 3000);
+                      });
+                    }
+                  }}
+                >
                   Share
                 </button>
               </div>
@@ -157,7 +192,12 @@ function CreatorPage() {
                         Exclusive: Tier {post.minTierRank}+
                       </span>
                     )}
-                    <button className="secondary">Read More</button>
+                    <button 
+                      className="secondary"
+                      onClick={() => window.location.href = `/post/${post.id}`}
+                    >
+                      Read More
+                    </button>
                   </div>
                 </div>
               ))}
@@ -173,6 +213,38 @@ function CreatorPage() {
           onClose={() => setShowSubscribeModal(false)}
         />
       )}
+
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '16px 24px',
+          background: notification.type === 'success' ? '#10b981' : notification.type === 'error' ? '#ef4444' : '#6366f1',
+          color: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 9999,
+          fontWeight: '500',
+          maxWidth: '400px',
+          animation: 'slideIn 0.3s ease-out'
+        }}>
+          {notification.message}
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }

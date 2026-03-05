@@ -20,6 +20,8 @@ function MemberDashboard() {
   const [creatorsList, setCreatorsList] = useState([]);
   const [showManageModal, setShowManageModal] = useState(false);
   const [managingSubscription, setManagingSubscription] = useState(null);
+  const [notification, setNotification] = useState(null);
+  const [confirmModal, setConfirmModal] = useState(null);
 
   useEffect(() => {
     if (user) {
@@ -391,9 +393,25 @@ function MemberDashboard() {
               <button 
                 className="secondary"
                 onClick={() => {
-                  if (confirm('Are you sure you want to cancel this subscription?')) {
-                    alert('Cancel feature coming soon!');
-                  }
+                  setConfirmModal({
+                    title: 'Cancel Subscription',
+                    message: 'Are you sure you want to cancel this subscription?',
+                    onConfirm: async () => {
+                      const result = await useSubscriptionStore.getState().cancelSubscription(managingSubscription.id);
+                      if (result.success) {
+                        setNotification({ type: 'success', message: 'Subscription canceled successfully!' });
+                        setShowManageModal(false);
+                        setConfirmModal(null);
+                        fetchMemberSubscriptions(user.uid);
+                        setTimeout(() => setNotification(null), 3000);
+                      } else {
+                        setNotification({ type: 'error', message: 'Error: ' + result.error });
+                        setConfirmModal(null);
+                        setTimeout(() => setNotification(null), 3000);
+                      }
+                    },
+                    onCancel: () => setConfirmModal(null)
+                  });
                 }}
               >
                 ✕ Cancel Subscription
@@ -412,6 +430,80 @@ function MemberDashboard() {
           </div>
         </div>
       )}
+
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          padding: '16px 24px',
+          background: notification.type === 'success' ? '#10b981' : notification.type === 'error' ? '#ef4444' : '#6366f1',
+          color: 'white',
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 9999,
+          fontWeight: '500',
+          maxWidth: '400px',
+          animation: 'slideIn 0.3s ease-out'
+        }}>
+          {notification.message}
+        </div>
+      )}
+
+      {confirmModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '8px',
+            padding: '30px',
+            maxWidth: '400px',
+            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)'
+          }}>
+            <h2 style={{ marginBottom: '15px', color: '#1f2937' }}>{confirmModal.title}</h2>
+            <p style={{ color: '#666', marginBottom: '25px', lineHeight: '1.5' }}>{confirmModal.message}</p>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                className="primary"
+                onClick={confirmModal.onConfirm}
+                style={{ flex: 1, background: '#ef4444' }}
+              >
+                Confirm
+              </button>
+              <button
+                className="secondary"
+                onClick={confirmModal.onCancel}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(400px);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 }
