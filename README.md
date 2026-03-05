@@ -275,7 +275,7 @@ SH/
 
 ## ⚙️ Scaling & Future Improvements
 
-### What Would Be Added in 1 Week
+### What Would Be Added in Future
 - [ ] Cloud Functions for subscription renewal automation
 - [ ] Proration logic for mid-cycle upgrades
 - [ ] Discount codes system
@@ -367,6 +367,4 @@ service cloud.firestore {
 - [Vercel Deployment](https://vercel.com/docs)
 - [React Router Docs](https://reactrouter.com)
 
----
 
-Last Updated: February 28, 2026
